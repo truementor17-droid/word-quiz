@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우주 탐사 영단어 미션 (Space English Vocabulary Quiz)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #38bdf8;
+            border-radius: 4px;
+        }
+
+        /* Glassmorphism card styles */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(56, 189, 248, 0.05);
+        }
+
+        .glass-button {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(99, 102, 241, 0.2));
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.4), rgba(99, 102, 241, 0.4));
+            border-color: rgba(56, 189, 248, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+        .glass-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        /* Pulsing Glow Effect */
+        @keyframes pulse-glow {
+            0%, 100% { filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6)); }
+            50% { filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.9)); }
+        }
+        .glow-effect {
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+
+        /* Shake animation for incorrect answer / lost orbit */
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-8px, 5px) rotate(-3deg); }
+            40% { transform: translate(8px, -5px) rotate(3deg); }
+            60% { transform: translate(-6px, -2px) rotate(-2deg); }
+            80% { transform: translate(6px, 3px) rotate(2deg); }
+        }
+        .shake-screen {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* Space rocket thrust flame pulse */
+        @keyframes flame-thrust {
+            0%, 100% { opacity: 0.8; transform: scaleY(1); }
+            50% { opacity: 1; transform: scaleY(1.25); }
+        }
+        .flame-anim {
+            animation: flame-thrust 0.2s infinite alternate;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative overflow-x-hidden overflow-y-auto bg-slate-950 text-slate-100">
+
+    <!-- Background Space Animation Canvas -->
+    <canvas id="spaceCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <!-- Top Navigation / HUD Bar -->
+    <header class="relative z-10 w-full p-4 md:px-8 flex justify-between items-center border-b border-cyan-900/30 bg-slate-950/60 backdrop-blur-md">
+        <div class="flex items-center space-x-3">
+            <div class="p-2 bg-cyan-950/80 rounded-xl border border-cyan-500/40 text-cyan-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-lg md:text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300">
+                    VOYAGER ENGLISH
+                </h1>
+                <p class="text-xs text-slate-400">중1 영단어 우주 궤도 탐사 미션</p>
+            </div>
+        </div>
+
+        <!-- Mute Sound Toggle Button -->
+        <button id="soundToggleBtn" onclick="toggleAudio()" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900/80 text-xs font-semibold text-slate-300 hover:text-cyan-300 hover:border-cyan-500/50 transition-colors">
+            <span id="soundIcon">🔊</span>
+            <span id="soundText" class="hidden sm:inline">사운드 ON</span>
+        </button>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="relative z-10 flex-1 flex items-center justify-center p-4 md:p-6 max-w-4xl mx-auto w-full my-auto py-6">
+
+        <!-- ==================== 1. START / BRIEFING SCREEN ==================== -->
+        <div id="startScreen" class="w-full glass-panel rounded-3xl p-6 md:p-10 text-center flex flex-col items-center space-y-6 max-w-2xl">
+            <div class="relative group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+                <div class="relative w-28 h-28 md:w-36 md:h-36 rounded-full bg-slate-900 border-2 border-cyan-400 flex items-center justify-center p-4 glow-effect">
+                    <!-- Rocket SVG Icon -->
+                    <svg class="w-20 h-20 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-cyan-950 text-cyan-300 border border-cyan-800">
+                    Mission Briefing
+                </span>
+                <h2 class="text-2xl md:text-4xl font-black tracking-tight text-white">
+                    우주 탐사선 <span class="text-cyan-400">세종호</span> 발사 준비!
+                </h2>
+                <p class="text-slate-300 text-sm md:text-base leading-relaxed max-w-lg mx-auto">
+                    대원님, 12개의 영단어 퀴즈를 해결하여 우주선의 탐사 궤도를 유지하세요!<br>
+                    <span class="text-cyan-300 font-semibold">정답</span>을 맞히면 우주선이 순항하며, <span class="text-rose-400 font-semibold">오답</span>이 쌓이면 궤도를 이탈하여 우주를 헤매게 됩니다.
+                </p>
+            </div>
+
+            <!-- Quiz Settings Summary -->
+            <div class="grid grid-cols-3 gap-3 w-full max-w-md py-3 text-xs md:text-sm">
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <p class="text-slate-400">총 문항수</p>
+                    <p class="text-cyan-400 font-bold text-lg">12 문제</p>
+                </div>
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <p class="text-slate-400">문제 유형</p>
+                    <p class="text-indigo-400 font-bold text-lg">객관/OX/주관</p>
+                </div>
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <p class="text-slate-400">목표 궤도</p>
+                    <p class="text-emerald-400 font-bold text-lg">안정 궤도</p>
+                </div>
+            </div>
+
+            <button onclick="startLaunchSequence()" class="glass-button w-full max-w-md py-4 px-8 rounded-2xl text-lg font-extrabold text-white shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 flex items-center justify-center space-x-3 group">
+                <span>우주선 발사하기</span>
+                <svg class="w-6 h-6 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- ==================== 2. LAUNCH ANIMATION OVERLAY ==================== -->
+        <div id="launchScreen" class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-lg">
+            <div id="countdownText" class="text-7xl md:text-9xl font-black text-cyan-400 animate-bounce tracking-widest">
+                3
+            </div>
+            <p id="launchStatusText" class="mt-6 text-xl md:text-2xl font-bold text-slate-300 tracking-wider">
+                카운트다운 시작... 엔진 출력 점검 중
+            </p>
+        </div>
+
+        <!-- ==================== 3. QUIZ PLAY SCREEN ==================== -->
+        <div id="quizScreen" class="hidden w-full glass-panel rounded-3xl p-5 md:p-8 flex flex-col space-y-6">
+
+            <!-- Flight Dashboard HUD -->
+            <div class="space-y-2">
+                <div class="flex justify-between items-center text-xs md:text-sm font-bold">
+                    <div class="flex items-center space-x-2 text-cyan-300">
+                        <span class="inline-block w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                        <span>탐사 미션 <span id="currentQNum">1</span> / 12</span>
+                    </div>
+                    <div class="text-slate-400">
+                        궤도 안정도: <span id="orbitPercentText" class="text-emerald-400 font-black">100%</span>
+                    </div>
+                </div>
+
+                <!-- Orbit Stability Bar -->
+                <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-800 p-0.5">
+                    <div id="orbitProgressBar" class="h-full bg-gradient-to-r from-emerald-500 via-cyan-400 to-sky-400 rounded-full transition-all duration-500" style="width: 100%;"></div>
+                </div>
+
+                <div class="flex justify-between text-[10px] text-slate-500">
+                    <span>이탈 위험</span>
+                    <span>불안정</span>
+                    <span class="text-cyan-400 font-bold">정상 궤도</span>
+                </div>
+            </div>
+
+            <!-- Question Card Area -->
+            <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 shadow-inner space-y-4">
+                <div class="flex items-center space-x-2">
+                    <span id="questionTypeBadge" class="px-2.5 py-0.5 rounded-md text-[11px] font-extrabold uppercase bg-indigo-950 text-indigo-300 border border-indigo-700">
+                        O/X 퀴즈
+                    </span>
+                </div>
+                
+                <h3 id="questionText" class="text-lg md:text-2xl font-bold text-white leading-relaxed">
+                    질문 내용이 여기에 표시됩니다.
+                </h3>
+
+                <p id="questionHint" class="text-xs md:text-sm text-cyan-300/80 italic hidden">
+                    힌트: -
+                </p>
+            </div>
+
+            <!-- Answer Options Area -->
+            <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 min-h-[160px] justify-center items-center">
+                <!-- Dynamic Content injected via JS -->
+            </div>
+
+            <!-- Feedback Bar -->
+            <div id="feedbackBanner" class="hidden p-4 rounded-xl text-center font-extrabold text-sm md:text-base border transition-all">
+                <span id="feedbackText"></span>
+            </div>
+        </div>
+
+        <!-- ==================== 4. RESULT SCREEN ==================== -->
+        <div id="resultScreen" class="hidden w-full glass-panel rounded-3xl p-5 md:p-8 text-center flex flex-col items-center space-y-4 md:space-y-5 my-auto">
+            
+            <div id="resultBadgeIcon" class="w-20 h-20 md:w-28 md:h-28 rounded-full flex items-center justify-center p-3 border-4 shadow-2xl">
+                <!-- Dynamic Icon injected via JS -->
+            </div>
+
+            <div class="space-y-1 md:space-y-2">
+                <p id="resultSubTitle" class="text-xs md:text-sm font-bold uppercase tracking-widest text-cyan-400">
+                    미션 완료 보고서
+                </p>
+                <h2 id="resultMainTitle" class="text-2xl md:text-3xl font-black text-white">
+                    우주 탐사 성공!
+                </h2>
+                <p id="resultDesc" class="text-slate-300 text-xs md:text-sm max-w-lg mx-auto leading-relaxed">
+                    결과 설명이 표시됩니다.
+                </p>
+            </div>
+
+            <!-- Score Stats Box -->
+            <div class="grid grid-cols-3 gap-3 w-full max-w-md bg-slate-900/90 p-3 md:p-4 rounded-2xl border border-slate-800">
+                <div>
+                    <p class="text-xs text-slate-400">맞힌 문제</p>
+                    <p id="correctCountText" class="text-lg md:text-2xl font-extrabold text-emerald-400">0 / 12</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400">최종 점수</p>
+                    <p id="finalScoreText" class="text-lg md:text-2xl font-extrabold text-cyan-400">0점</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400">최종 궤도</p>
+                    <p id="finalOrbitText" class="text-lg md:text-2xl font-extrabold text-indigo-400">100%</p>
+                </div>
+            </div>
+
+            <!-- Review Accordion/List -->
+            <div class="w-full max-w-lg text-left bg-slate-900/60 rounded-xl p-3 md:p-4 border border-slate-800/80 max-h-36 md:max-h-44 overflow-y-auto space-y-2">
+                <p class="text-xs font-bold text-slate-400 uppercase mb-2">📋 문제별 정답 복습</p>
+                <div id="reviewList" class="space-y-2 text-xs">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- Restart Button -->
+            <button onclick="restartMission()" class="glass-button w-full max-w-md py-3.5 px-8 rounded-2xl text-base md:text-lg font-extrabold text-white shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 flex items-center justify-center space-x-3 mt-1 mb-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                <span>우주선 다시 발사하기</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 w-full p-3 text-center text-xs text-slate-500 border-t border-slate-900 bg-slate-950/80">
+        <p>Voyager Middle School English Vocabulary Challenge &copy; 2026 Space Mission</p>
+    </footer>
+
+    <script>
+        /* ===================================================================
+           1. QUESTION BANK DATA (12 Questions with Mixed Types)
+           - Includes exact user requests + middle school grade 1 word list
+           =================================================================== */
+        const questionsData = [
+            // User requested explicit questions:
+            {
+                type: 'ox',
+                badge: 'O/X 퀴즈',
+                question: "‘전통적인’을 의미하는 단어는 'tradition'이다.",
+                answer: false, // tradition is '전통' (명사), '전통적인'은 traditional이다.
+                explanation: "'tradition'은 명사로 '전통'을 뜻합니다. '전통적인'이라는 형용사는 'traditional'입니다."
+            },
+            {
+                type: 'mc',
+                badge: '4지 선다형',
+                question: "'dish'의 의미가 올바르게 짝지어진 것은?",
+                options: [
+                    "요리 — 접시",
+                    "요리 — 음료",
+                    "음료 — 접시",
+                    "과일 — 요리"
+                ],
+                answer: 0,
+                explanation: "'dish'는 '접시'라는 뜻과 함께 '요리'라는 의미를 모두 가지고 있습니다."
+            },
+            {
+                type: 'mc',
+                badge: '4지 선다형',
+                question: "다음 중 'play'의 의미가 아닌 것은?",
+                options: [
+                    "(음악을) 재생하다",
+                    "운동 경기를 보다",
+                    "연극",
+                    "(악기를) 연주하다"
+                ],
+                answer: 1,
+                explanation: "'play'는 재생하다, 연주하다, 놀다, 연극 등의 뜻이 있지만 '운동 경기를 보다'라는 뜻은 포함하지 않습니다."
+            },
+            
+            // Generated questions using the remaining word list:
+            {
+                type: 'mc',
+                badge: '영영풀이 퀴즈',
+                question: "다음 영영풀이에 알맞은 단어는?\n\"The customs, arts, and way of life of a particular group of people.\"",
+                options: ["culture", "famous", "fresh", "popular"],
+                answer: 0,
+                explanation: "'culture'는 '문화, 교양'을 의미합니다."
+            },
+            {
+                type: 'ox',
+                badge: 'O/X 퀴즈',
+                question: "'famous'는 '인기 있는'이라는 뜻이고, 'popular'는 '유명한'이라는 뜻이다.",
+                answer: false,
+                explanation: "'famous'가 '유명한'이며, 'popular'가 '인기 있는, 대중적인'입니다."
+            },
+            {
+                type: 'short',
+                badge: '주관식 스펠링',
+                question: "다음 영영풀이에 알맞은 단어를 알파벳으로 입력하세요.\n\"Liked, enjoyed, or admired by many people.\"",
+                hint: "힌트: p _ p _ l _ r (인기 있는)",
+                answer: "popular",
+                explanation: "'popular'는 많은 사람들에게 사랑받는 '인기 있는'이라는 뜻입니다."
+            },
+            {
+                type: 'mc',
+                badge: '영영풀이 퀴즈',
+                question: "다음 영영풀이에 알맞은 단어는?\n\"New or freshly gathered; clean and full of natural energy.\"",
+                options: ["easy", "colorful", "fresh", "many"],
+                answer: 2,
+                explanation: "'fresh'는 '신선한, 생생한'이라는 뜻을 가집니다."
+            },
+            {
+                type: 'ox',
+                badge: 'O/X 퀴즈',
+                question: "'colorful'은 '색색의, 다채로운'이라는 의미를 가진 형용사이다.",
+                answer: true,
+                explanation: "'color(색)'에 '-ful'이 붙어 '색색의, 다채로운'이라는 뜻이 됩니다."
+            },
+            {
+                type: 'mc',
+                badge: '4지 선다형',
+                question: "다음 문장의 빈칸에 들어갈 가장 알맞은 단어는?\n\"The flowers in the space garden ______ so sweet and wonderful!\"",
+                options: [
+                    "smell",
+                    "look",
+                    "taste",
+                    "easy"
+                ],
+                answer: 0,
+                explanation: "정원에 있는 꽃들에서 '달콤하고 좋은 냄새가 난다(smell)'가 가장 자연스럽습니다."
+            },
+            {
+                type: 'short',
+                badge: '주관식 영단어',
+                question: "\"Not difficult; simple to do or understand\"의 뜻을 가진 단어(쉬운)를 입력하세요.",
+                hint: "힌트: e _ s y",
+                answer: "easy",
+                explanation: "'easy'는 '쉬운'이라는 뜻을 가집니다."
+            },
+            {
+                type: 'mc',
+                badge: '영영풀이 퀴즈',
+                question: "다음 영영풀이가 설명하는 단어는?\n\"Things that people and animals eat to live.\"",
+                options: ["food", "many", "look", "smell"],
+                answer: 0,
+                explanation: "사람이나 동물이 살기 위해 먹는 것은 'food(식품, 음식)'입니다."
+            },
+            {
+                type: 'ox',
+                badge: 'O/X 퀴즈',
+                question: "'many'는 셀 수 있는 명사 복수형 앞에 쓰여 '많은'을 나타낸다.",
+                answer: true,
+                explanation: "'many'는 셀 수 있는 명사와 함께 쓰여 '많은'을 뜻합니다. (셀 수 없는 명사에는 much 사용)"
+            }
+        ];
+
+        /* ===================================================================
+           2. AUDIO SYNTHESIZER (Web Audio API - Enhanced Impact SFX)
+           - Background Thruster Engine Ambience (Continuous during quiz)
+           - Correct SFX (Punchy Major Arpeggio Chime)
+           - Incorrect SFX (Descent Sci-Fi Wobble Alarm)
+           - Launch Countdown SFX
+           =================================================================== */
+        let audioCtx = null;
+        let isMuted = false;
+        let bgEngineOsc1 = null;
+        let bgEngineOsc2 = null;
+        let bgEngineGain = null;
+        let bgFilter = null;
+        let isEngineRunning = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Global click listener to ensure audio context is activated
+        document.addEventListener('click', () => {
+            initAudio();
+        }, { once: true });
+
+        function toggleAudio() {
+            initAudio();
+            isMuted = !isMuted;
+            const icon = document.getElementById('soundIcon');
+            const text = document.getElementById('soundText');
+            if (isMuted) {
+                icon.innerText = '🔇';
+                text.innerText = '사운드 OFF';
+                if (bgEngineGain) bgEngineGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            } else {
+                icon.innerText = '🔊';
+                text.innerText = '사운드 ON';
+                if (bgEngineGain && isEngineRunning) bgEngineGain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+            }
+        }
+
+        // Ambient Space Engine Sound (Dual Sub-Drone Oscillator)
+        function startSpaceEngineSound() {
+            initAudio();
+            if (isEngineRunning) return;
+            
+            try {
+                const now = audioCtx.currentTime;
+                bgEngineOsc1 = audioCtx.createOscillator();
+                bgEngineOsc2 = audioCtx.createOscillator();
+                bgFilter = audioCtx.createBiquadFilter();
+                bgEngineGain = audioCtx.createGain();
+
+                bgEngineOsc1.type = 'sawtooth';
+                bgEngineOsc1.frequency.setValueAtTime(65.41, now); // C2
+
+                bgEngineOsc2.type = 'sine';
+                bgEngineOsc2.frequency.setValueAtTime(130.81, now); // C3
+
+                bgFilter.type = 'lowpass';
+                bgFilter.frequency.setValueAtTime(280, now);
+
+                bgEngineGain.gain.setValueAtTime(isMuted ? 0 : 0.12, now);
+
+                bgEngineOsc1.connect(bgFilter);
+                bgEngineOsc2.connect(bgFilter);
+                bgFilter.connect(bgEngineGain);
+                bgEngineGain.connect(audioCtx.destination);
+
+                bgEngineOsc1.start();
+                bgEngineOsc2.start();
+                isEngineRunning = true;
+            } catch (e) {
+                console.log("Audio start error:", e);
+            }
+        }
+
+        function stopSpaceEngineSound() {
+            if (isEngineRunning && bgEngineGain) {
+                try {
+                    const now = audioCtx.currentTime;
+                    bgEngineGain.gain.setValueAtTime(bgEngineGain.gain.value, now);
+                    bgEngineGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+                    setTimeout(() => {
+                        if (bgEngineOsc1) { bgEngineOsc1.stop(); bgEngineOsc1.disconnect(); }
+                        if (bgEngineOsc2) { bgEngineOsc2.stop(); bgEngineOsc2.disconnect(); }
+                        isEngineRunning = false;
+                    }, 300);
+                } catch(e) {}
+            }
+        }
+
+        // Correct Answer SFX (Impactful Sci-Fi Arpeggio ~0.55s)
+        function playCorrectSFX() {
+            if (isMuted) return;
+            initAudio();
+            
+            const now = audioCtx.currentTime;
+            const freqs = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+            freqs.forEach((f, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(f, now + i * 0.08);
+
+                gain.gain.setValueAtTime(0, now + i * 0.08);
+                gain.gain.linearRampToValueAtTime(0.25, now + i * 0.08 + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.4);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now + i * 0.08);
+                osc.stop(now + i * 0.08 + 0.45);
+            });
+        }
+
+        // Incorrect Answer SFX (Descending Wobble Warning ~0.5s)
+        function playIncorrectSFX() {
+            if (isMuted) return;
+            initAudio();
+
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(220, now);
+            osc.frequency.linearRampToValueAtTime(85, now + 0.45);
+
+            gain.gain.setValueAtTime(0.28, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.52);
+        }
+
+        // Countdown Beep
+        function playBeep(freq = 440, duration = 0.15) {
+            if (isMuted) return;
+            initAudio();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + duration);
+        }
+
+        /* ===================================================================
+           3. CANVAS SPACE & ROCKET ANIMATION SYSTEM
+           - Starfield simulation
+           - Rocket positioning according to orbit stability
+           - Smooth flight vs Wobble / Lost Orbit trajectory
+           =================================================================== */
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        // Stars array
+        const stars = [];
+        const numStars = 150;
+        for (let i = 0; i < numStars; i++) {
+            stars.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                size: Math.random() * 2 + 0.5,
+                speed: Math.random() * 2 + 0.5,
+                opacity: Math.random()
+            });
+        }
+
+        // Rocket flight state variables
+        let rocketState = {
+            x: width / 2,
+            y: height - 120,
+            targetX: width / 2,
+            targetY: height - 140,
+            angle: 0,
+            stability: 100, // 0 to 100
+            shakeAmount: 0,
+            isVisible: false
+        };
+
+        function updateSpaceCanvas() {
+            ctx.clearRect(0, 0, width, height);
+
+            // 1. Draw Starfield
+            ctx.fillStyle = '#ffffff';
+            const speedMultiplier = 1 + (100 - rocketState.stability) * 0.02; // Speeds up chaotically if unstable
+            stars.forEach(star => {
+                star.y += star.speed * speedMultiplier;
+                if (star.y > height) {
+                    star.y = 0;
+                    star.x = Math.random() * width;
+                }
+                ctx.globalAlpha = star.opacity;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1.0;
+
+            // 2. Draw Rocket (if mission is running)
+            if (rocketState.isVisible) {
+                // Smooth movement towards target
+                rocketState.x += (rocketState.targetX - rocketState.x) * 0.05;
+                rocketState.y += (rocketState.targetY - rocketState.y) * 0.05;
+
+                // Add shaking/wobble if orbit stability drops
+                let currentX = rocketState.x;
+                let currentY = rocketState.y;
+                let currentAngle = rocketState.angle;
+
+                if (rocketState.stability < 100) {
+                    const instabilityFactor = (100 - rocketState.stability) / 100;
+                    currentX += (Math.random() - 0.5) * 16 * instabilityFactor;
+                    currentY += (Math.random() - 0.5) * 16 * instabilityFactor;
+                    currentAngle += (Math.random() - 0.5) * 0.3 * instabilityFactor;
+                }
+
+                ctx.save();
+                ctx.translate(currentX, currentY);
+                ctx.rotate(currentAngle);
+
+                // Draw Thruster Flame
+                const flameLength = 25 + Math.random() * 15;
+                ctx.beginPath();
+                ctx.moveTo(-8, 20);
+                ctx.lineTo(0, 20 + flameLength);
+                ctx.lineTo(8, 20);
+                ctx.closePath();
+                
+                // Color flame based on stability
+                if (rocketState.stability > 50) {
+                    ctx.fillStyle = '#38bdf8'; // Cyan
+                } else if (rocketState.stability > 25) {
+                    ctx.fillStyle = '#f59e0b'; // Amber warning
+                } else {
+                    ctx.fillStyle = '#f43f5e'; // Danger Red
+                }
+                ctx.fill();
+
+                // Draw Rocket Body SVG-like canvas path
+                // Main Capsule Body
+                ctx.fillStyle = '#e2e8f0';
+                ctx.beginPath();
+                ctx.moveTo(0, -35);
+                ctx.quadraticCurveTo(15, -10, 12, 20);
+                ctx.lineTo(-12, 20);
+                ctx.quadraticCurveTo(-15, -10, 0, -35);
+                ctx.closePath();
+                ctx.fill();
+
+                // Wings
+                ctx.fillStyle = '#0284c7';
+                ctx.beginPath();
+                ctx.moveTo(-12, 5);
+                ctx.lineTo(-22, 22);
+                ctx.lineTo(-12, 20);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(12, 5);
+                ctx.lineTo(22, 22);
+                ctx.lineTo(12, 20);
+                ctx.closePath();
+                ctx.fill();
+
+                // Window Glass
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.arc(0, -10, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            requestAnimationFrame(updateSpaceCanvas);
+        }
+
+        requestAnimationFrame(updateSpaceCanvas);
+
+        /* ===================================================================
+           4. QUIZ LOGIC & STATE MANAGEMENT
+           =================================================================== */
+        let currentQuestionIdx = 0;
+        let score = 0;
+        let orbitStability = 100;
+        let userAnswers = [];
+        let isAnswerLocked = false;
+
+        // Start Launch Sequence Animation
+        function startLaunchSequence() {
+            initAudio();
+            document.getElementById('startScreen').classList.add('hidden');
+            const launchScreen = document.getElementById('launchScreen');
+            launchScreen.classList.remove('hidden');
+
+            let countdown = 3;
+            const countdownEl = document.getElementById('countdownText');
+            const statusEl = document.getElementById('launchStatusText');
+
+            playBeep(440, 0.15);
+
+            const timer = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    countdownEl.innerText = countdown;
+                    playBeep(440, 0.15);
+                } else if (countdown === 0) {
+                    countdownEl.innerText = "LAUNCH!";
+                    countdownEl.classList.remove('text-cyan-400');
+                    countdownEl.classList.add('text-emerald-400');
+                    statusEl.innerText = "🚀 세종호 우주 진입 완료! 탐사 궤도에 들어섭니다.";
+                    playBeep(880, 0.4);
+                } else {
+                    clearInterval(timer);
+                    launchScreen.classList.add('hidden');
+                    startQuizMission();
+                }
+            }, 1000);
+        }
+
+        // Initialize Quiz Mission
+        function startQuizMission() {
+            currentQuestionIdx = 0;
+            score = 0;
+            orbitStability = 100;
+            userAnswers = [];
+            isAnswerLocked = false;
+
+            // Rocket canvas visible - Position in upper area to avoid quiz panel overlap
+            rocketState.isVisible = true;
+            rocketState.stability = 100;
+            const baseX = width > 768 ? width * 0.8 : width / 2;
+            const baseY = width > 768 ? 150 : 100;
+            rocketState.targetX = baseX;
+            rocketState.targetY = baseY;
+            rocketState.x = baseX;
+            rocketState.y = baseY;
+            rocketState.angle = 0;
+
+            document.getElementById('quizScreen').classList.remove('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+
+            // Start Audio Loop
+            startSpaceEngineSound();
+
+            renderQuestion();
+        }
+
+        // Render current question
+        function renderQuestion() {
+            isAnswerLocked = false;
+            const q = questionsData[currentQuestionIdx];
+
+            // Update Header Progress
+            document.getElementById('currentQNum').innerText = currentQuestionIdx + 1;
+            updateOrbitUI();
+
+            // Question Text & Badges
+            document.getElementById('questionTypeBadge').innerText = q.badge;
+            document.getElementById('questionText').innerText = q.question;
+
+            const hintEl = document.getElementById('questionHint');
+            if (q.hint) {
+                hintEl.innerText = q.hint;
+                hintEl.classList.remove('hidden');
+            } else {
+                hintEl.classList.add('hidden');
+            }
+
+            // Hide Feedback
+            const feedbackBanner = document.getElementById('feedbackBanner');
+            feedbackBanner.classList.add('hidden');
+
+            // Render Options based on type
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            if (q.type === 'ox') {
+                container.className = "grid grid-cols-2 gap-4 min-h-[160px]";
+                container.innerHTML = `
+                    <button onclick="handleAnswer(true)" class="glass-button p-6 rounded-2xl flex flex-col items-center justify-center space-y-2 text-emerald-400 hover:text-emerald-300">
+                        <span class="text-4xl md:text-5xl font-black">O</span>
+                        <span class="text-xs text-slate-300">그렇다 (True)</span>
+                    </button>
+                    <button onclick="handleAnswer(false)" class="glass-button p-6 rounded-2xl flex flex-col items-center justify-center space-y-2 text-rose-400 hover:text-rose-300">
+                        <span class="text-4xl md:text-5xl font-black">X</span>
+                        <span class="text-xs text-slate-300">아니다 (False)</span>
+                    </button>
+                `;
+            } else if (q.type === 'mc') {
+                container.className = "grid grid-cols-1 md:grid-cols-2 gap-3 min-h-[160px]";
+                q.options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.onclick = () => handleAnswer(idx);
+                    btn.className = "glass-button p-4 rounded-xl text-left font-bold text-slate-200 text-sm md:text-base flex items-center space-x-3";
+                    btn.innerHTML = `
+                        <span class="w-7 h-7 rounded-lg bg-cyan-950 border border-cyan-700/60 flex items-center justify-center text-xs font-black text-cyan-300 flex-shrink-0">${idx + 1}</span>
+                        <span>${opt}</span>
+                    `;
+                    container.appendChild(btn);
+                });
+            } else if (q.type === 'short') {
+                container.className = "flex flex-col space-y-3 min-h-[160px] justify-center";
+                container.innerHTML = `
+                    <div class="flex space-x-2">
+                        <input type="text" id="shortAnswerInput" placeholder="정답 단어를 입력하세요" class="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-semibold focus:outline-none focus:border-cyan-400 text-center text-lg">
+                        <button onclick="submitShortAnswer()" class="glass-button px-6 py-3 rounded-xl font-extrabold text-cyan-300">제출</button>
+                    </div>
+                `;
+                setTimeout(() => {
+                    const input = document.getElementById('shortAnswerInput');
+                    if (input) {
+                        input.focus();
+                        input.addEventListener('keypress', (e) => {
+                            if (e.key === 'Enter') submitShortAnswer();
+                        });
+                    }
+                }, 100);
+            }
+        }
+
+        function submitShortAnswer() {
+            const input = document.getElementById('shortAnswerInput');
+            if (!input) return;
+            const val = input.value.trim().toLowerCase();
+            handleAnswer(val);
+        }
+
+        // Process user answer selection
+        function handleAnswer(userAns) {
+            if (isAnswerLocked) return;
+            isAnswerLocked = true;
+
+            const q = questionsData[currentQuestionIdx];
+            let isCorrect = false;
+
+            if (q.type === 'short') {
+                isCorrect = (String(userAns).trim().toLowerCase() === String(q.answer).trim().toLowerCase());
+            } else {
+                isCorrect = (userAns === q.answer);
+            }
+
+            userAnswers.push({
+                question: q.question,
+                userAns: userAns,
+                correctAns: q.answer,
+                isCorrect: isCorrect,
+                explanation: q.explanation,
+                type: q.type
+            });
+
+            const feedbackBanner = document.getElementById('feedbackBanner');
+            const feedbackText = document.getElementById('feedbackText');
+            feedbackBanner.classList.remove('hidden', 'bg-emerald-950/80', 'border-emerald-500', 'text-emerald-300', 'bg-rose-950/80', 'border-rose-500', 'text-rose-300');
+
+            if (isCorrect) {
+                // CORRECT
+                score += 10;
+                playCorrectSFX();
+                
+                feedbackBanner.classList.add('bg-emerald-950/80', 'border-emerald-500', 'text-emerald-300');
+                feedbackText.innerText = "✨ [정답!] 우주선이 궤도를 차분하게 유지하며 순항합니다!";
+
+                // Rocket shifts towards upper smooth orbit (unobstructed)
+                const baseX = width > 768 ? width * 0.8 : width / 2;
+                const baseY = width > 768 ? 150 : 100;
+                rocketState.targetX = baseX + (Math.random() - 0.5) * 30;
+                rocketState.targetY = baseY;
+                rocketState.angle = 0;
+
+            } else {
+                // INCORRECT
+                orbitStability = Math.max(0, orbitStability - 15); // Drop stability
+                playIncorrectSFX();
+
+                feedbackBanner.classList.add('bg-rose-950/80', 'border-rose-500', 'text-rose-300');
+                feedbackText.innerText = "⚠️ [오답] 궤도 오차 발생! 우주선이 균형을 잃고 요동칩니다!";
+
+                // Screen shake & rocket trajectory drift
+                const quizScreen = document.getElementById('quizScreen');
+                quizScreen.classList.add('shake-screen');
+                setTimeout(() => quizScreen.classList.remove('shake-screen'), 500);
+
+                // Rocket drifts sideways off-course
+                const driftDirection = (currentQuestionIdx % 2 === 0) ? -1 : 1;
+                const baseX = width > 768 ? width * 0.8 : width / 2;
+                const baseY = width > 768 ? 150 : 100;
+                rocketState.targetX = baseX + (driftDirection * 70 * ((100 - orbitStability) / 100));
+                rocketState.targetY = baseY + 15;
+                rocketState.angle = driftDirection * 0.3;
+            }
+
+            rocketState.stability = orbitStability;
+            updateOrbitUI();
+
+            // Delay before next question or result
+            setTimeout(() => {
+                currentQuestionIdx++;
+                if (currentQuestionIdx < questionsData.length) {
+                    renderQuestion();
+                } else {
+                    finishMission();
+                }
+            }, 1800);
+        }
+
+        function updateOrbitUI() {
+            document.getElementById('orbitPercentText').innerText = orbitStability + "%";
+            const bar = document.getElementById('orbitProgressBar');
+            bar.style.width = orbitStability + "%";
+
+            if (orbitStability > 60) {
+                bar.className = "h-full bg-gradient-to-r from-emerald-500 via-cyan-400 to-sky-400 rounded-full transition-all duration-500";
+            } else if (orbitStability > 30) {
+                bar.className = "h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all duration-500";
+            } else {
+                bar.className = "h-full bg-gradient-to-r from-rose-600 to-red-500 rounded-full transition-all duration-500";
+            }
+        }
+
+        /* ===================================================================
+           5. FINAL RESULT SCREEN & REVIEWS
+           =================================================================== */
+        function finishMission() {
+            // STOP BACKGROUND THRUST AUDIO IMMEDIATELY WHEN ALL QUESTIONS ARE DONE
+            stopSpaceEngineSound();
+
+            document.getElementById('quizScreen').classList.add('hidden');
+            const resultScreen = document.getElementById('resultScreen');
+            resultScreen.classList.remove('hidden');
+
+            const correctCount = userAnswers.filter(a => a.isCorrect).length;
+            const percentage = Math.round((correctCount / questionsData.length) * 100);
+
+            document.getElementById('correctCountText').innerText = `${correctCount} / ${questionsData.length}`;
+            document.getElementById('finalScoreText').innerText = `${percentage}점`;
+            document.getElementById('finalOrbitText').innerText = `${orbitStability}%`;
+
+            const iconContainer = document.getElementById('resultBadgeIcon');
+            const mainTitle = document.getElementById('resultMainTitle');
+            const subTitle = document.getElementById('resultSubTitle');
+            const desc = document.getElementById('resultDesc');
+
+            // Dynamic Result Customization based on Score / Orbit
+            if (correctCount >= 10) {
+                // PERFECT / HIGH SCORE
+                iconContainer.className = "w-20 h-20 md:w-28 md:h-28 rounded-full flex items-center justify-center p-3 border-4 border-emerald-400 bg-emerald-950/80 shadow-emerald-500/50 glow-effect";
+                iconContainer.innerHTML = `
+                    <svg class="w-12 h-12 md:w-14 md:h-14 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    </svg>
+                `;
+                subTitle.innerText = "🌟 최고 등급 탐사 대원";
+                mainTitle.innerText = "목적지 심우주 은하 도달 성공!";
+                desc.innerText = "완벽에 가까운 영단어 지식으로 세종호가 최적의 탐사 궤도를 완주했습니다! 우주 과학 총사령부에서 최고의 찬사를 보냅니다.";
+            } else if (correctCount >= 6) {
+                // MODERATE SCORE
+                iconContainer.className = "w-20 h-20 md:w-28 md:h-28 rounded-full flex items-center justify-center p-3 border-4 border-cyan-400 bg-cyan-950/80 shadow-cyan-500/50";
+                iconContainer.innerHTML = `
+                    <svg class="w-12 h-12 md:w-14 md:h-14 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    </svg>
+                `;
+                subTitle.innerText = "🚀 우주 정거장 안착";
+                mainTitle.innerText = "안정적인 우주 항해 완수!";
+                desc.innerText = "일부 궤도 이탈 위기가 있었으나 뛰어난 임기응변으로 안전하게 목적지 정거장에 도달했습니다! 오답을 복습하고 더 먼 은하로 도전해 보세요.";
+            } else {
+                // LOW SCORE
+                iconContainer.className = "w-20 h-20 md:w-28 md:h-28 rounded-full flex items-center justify-center p-3 border-4 border-rose-500 bg-rose-950/80 shadow-rose-500/50";
+                iconContainer.innerHTML = `
+                    <svg class="w-12 h-12 md:w-14 md:h-14 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                `;
+                subTitle.innerText = "⚠️ 궤도 이탈 긴급 상황";
+                mainTitle.innerText = "외계 행성 비상 착륙!";
+                desc.innerText = "오답 누적으로 인해 세종호가 원래 궤도를 잃고 이름 모를 외계 행성에 불시착했습니다. 단어를 다시 복습하고 구출 임무를 시작하세요!";
+            }
+
+            // Build Question Review List
+            const reviewList = document.getElementById('reviewList');
+            reviewList.innerHTML = '';
+
+            userAnswers.forEach((ans, idx) => {
+                const item = document.createElement('div');
+                item.className = `p-2.5 rounded-lg border ${ans.isCorrect ? 'bg-emerald-950/30 border-emerald-800/40' : 'bg-rose-950/30 border-rose-800/40'}`;
+                
+                let answerDisplay = "";
+                if (ans.type === 'ox') {
+                    answerDisplay = ans.correctAns ? "O" : "X";
+                } else if (ans.type === 'mc') {
+                    answerDisplay = questionsData[idx].options[ans.correctAns];
+                } else {
+                    answerDisplay = ans.correctAns;
+                }
+
+                item.innerHTML = `
+                    <div class="flex justify-between font-bold">
+                        <span class="${ans.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">
+                            Q${idx + 1}. ${ans.isCorrect ? '⭕ 정답' : '❌ 오답'}
+                        </span>
+                        <span class="text-slate-400 font-normal">정답: <strong class="text-white">${answerDisplay}</strong></span>
+                    </div>
+                    <p class="text-slate-300 mt-1">${ans.explanation}</p>
+                `;
+                reviewList.appendChild(item);
+            });
+        }
+
+        // Restart mission
+        function restartMission() {
+            document.getElementById('resultScreen').classList.add('hidden');
+            startLaunchSequence();
+        }
+    </script>
+</body>
+</html>
